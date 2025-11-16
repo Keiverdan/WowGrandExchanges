@@ -538,13 +538,85 @@
         
         /* Botón de Tema */
         #toggleThemeBtn {
-             background-color: #DD6B20; /* Naranja */
-        }
-        
-        body.light-mode #toggleThemeBtn {
-            background-color: #fd7e14;
+		 	padding: 10px 25px; /* Tamaño del botón */
+   		 	font-size: 1.1em;
+   		 	font-weight: bold;
+    
+	   	 	border: none;
+  	 	 	border-radius: 1000px;
+ 	  	 	position: relative;
+    
+  	 	 	display: flex;
+  	 	 	justify-content: center;
+  	 	 	align-items: center;
+   		 	z-index: 2; /* Siempre encima del ::after en estado normal */
+   		 	overflow: hidden;
+   	 	/* Transición para suavizar el cambio al hacer hover */
+   		 	transition: all 0.4s ease-in-out;
         }
 
+	     #toggleThemeBtn::after{
+   			 content: '';
+   			 position: absolute;
+   			 /* 2. TAMAÑO DEL BORDE (ligeramente más grande que el botón principal) */
+  	    	 height: 107%;
+  		 	 width: 107%; 
+   			 border-radius: 1000px;
+  		 	 background-image: linear-gradient(to right, #B11AED, #0FD0F5);
+		   	 z-index: -1; /* Detrás del botón */
+		   	 top: 50%;
+  		 	 left: 50%;
+ 			   transform: translate(-50%, -50%);
+  			  transition: all 0.4s ease-in-out; 
+	}
+
+			#toggleThemeBtn:hover{
+  	  /* 3. ESTADO HOVER: Botón completamente degradado (como en la imagen 2) */
+  	  background-image: linear-gradient(to right, #B11AED, #0FD0F5);
+   	 background-color: transparent; /* Anula el color sólido */
+   	 color: #ffffff; /* Asegura que el texto sea blanco sobre el degradado */
+  	  box-shadow: 40px 0 100px #E33434, -40px 0 100px #34E37D; /* Tu sombra de brillo */
+	}
+
+			#toggleThemeBtn:hover::after{
+   	 /* 4. Esconde el ::after para que el degradado del hover sea uniforme */
+  	  height: 0;
+   	 width: 0;
+    	opacity: 0;
+	}
+        
+	/* --- LIGHT MODE --- */
+
+	body.light-mode #toggleThemeBtn {
+   	 /* 5. Light Mode Base: Fondo blanco/claro y texto oscuro */
+   	 background-color: var(--color-superficie);
+   	 color: var(--color-texto-claro);
+   	 z-index: 2; 
+	}
+
+	body.light-mode #toggleThemeBtn::after{
+   	 /* 6. Light Mode Borde */
+  	  content: "";
+  	  height: 107%;
+  	  width: 107%;
+   	 background-image: linear-gradient(to right, #B11AED, #0FD0F5);
+  	  z-index: -1;
+	}
+
+	body.light-mode #toggleThemeBtn:hover{
+   	 /* 7. Light Mode Hover */
+  	  background-image: linear-gradient(to right, #B11AED, #0FD0F5);
+  	  background-color: transparent;
+  	  color: #ffffff;
+  	  box-shadow: 40px 0 100px #0053D4, -40px 0 100px #F5EC00;
+	}
+
+	body.light-mode #toggleThemeBtn:hover::after{
+  	  /* 8. Esconde el ::after en hover */
+  	  height: 0;
+  	  width: 0;
+  	  opacity: 0;
+	}
 
         /* Indicador de modo de organización */
         .indicador-modo {
