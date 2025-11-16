@@ -1,0 +1,1259 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora Múltiple</title>
+    <style>
+        /* Variables CSS para el estilo Neón Suave */
+        :root {
+            --color-fondo: #1f2023;
+            --color-superficie: #2a2c30;
+            --color-neon-principal: #4fd1c5;
+            --color-neon-secundario: #8a85ff;
+            --color-texto-claro: #e0e0e0;
+            --color-texto-secundario: #b0b0b0;
+            --color-resaltado: #a6f0c6;
+            
+            --sombra-neon-fina: 0 0 2px var(--color-neon-principal),
+                                0 0 5px var(--color-neon-principal);
+            --sombra-neon-fina-sec: 0 0 2px var(--color-neon-secundario),
+                                    0 0 5px var(--color-neon-secundario);
+        }
+
+        /* Tema Claro */
+        .tema-claro {
+            --color-fondo: #f5f7fa;
+            --color-superficie: #ffffff;
+            --color-neon-principal: #3498db;
+            --color-neon-secundario: #9b59b6;
+            --color-texto-claro: #2c3e50;
+            --color-texto-secundario: #7f8c8d;
+            --color-resaltado: #2ecc71;
+            
+            --sombra-neon-fina: 0 0 2px rgba(52, 152, 219, 0.3),
+                                0 0 5px rgba(52, 152, 219, 0.2);
+            --sombra-neon-fina-sec: 0 0 2px rgba(155, 89, 182, 0.3),
+                                    0 0 5px rgba(155, 89, 182, 0.2);
+        }
+
+        /* Tema Pastel */
+        .tema-pastel {
+            --color-fondo: #f8f9fa;
+            --color-superficie: #ffffff;
+            --color-neon-principal: #6c757d;
+            --color-neon-secundario: #a0a0a0;
+            --color-texto-claro: #495057;
+            --color-texto-secundario: #868e96;
+            --color-resaltado: #51cf66;
+            
+            --sombra-neon-fina: 0 0 2px rgba(108, 117, 125, 0.2),
+                                0 0 5px rgba(108, 117, 125, 0.1);
+            --sombra-neon-fina-sec: 0 0 2px rgba(160, 160, 160, 0.2),
+                                    0 0 5px rgba(160, 160, 160, 0.1);
+        }
+
+        /* Tema Oscuro Suave (sin neón) */
+        .tema-oscuro-suave {
+            --color-fondo: #1a1d23;
+            --color-superficie: #252a33;
+            --color-neon-principal: #64b5f6;
+            --color-neon-secundario: #ba68c8;
+            --color-texto-claro: #e9ecef;
+            --color-texto-secundario: #adb5bd;
+            --color-resaltado: #81c784;
+            
+            --sombra-neon-fina: 0 0 0px transparent,
+                                0 0 0px transparent;
+            --sombra-neon-fina-sec: 0 0 0px transparent,
+                                    0 0 0px transparent;
+        }
+
+        /* Modo sin neón - elimina efectos de brillo */
+        .sin-neon {
+            --sombra-neon-fina: 0 0 0px transparent,
+                                0 0 0px transparent;
+            --sombra-neon-fina-sec: 0 0 0px transparent,
+                                    0 0 0px transparent;
+        }
+
+        .sin-neon .apartado,
+        .sin-neon .input-calculadora,
+        .sin-neon .input-tasa,
+        .sin-neon .input-conversor,
+        .sin-neon .progreso-barra-relleno,
+        .sin-neon .btn-accion,
+        .sin-neon .btn-organizar {
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+
+        .sin-neon .apartado.arrastrando,
+        .sin-neon .subseccion-bcv.arrastrando {
+            box-shadow: 0 0 10px rgba(0,0,0,0.3) !important;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--color-fondo);
+            color: var(--color-texto-claro);
+            font-family: 'Consolas', 'Courier New', monospace;
+            padding: 10px;
+            margin: 0;
+            min-height: 100vh;
+            overflow-x: hidden;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .contenedor-principal {
+            width: 100%; 
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            min-height: 800px;
+        }
+
+        h1 {
+            color: var(--color-neon-principal);
+            text-shadow: var(--sombra-neon-fina);
+            margin-top: 0;
+            font-size: 1.8em;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        h2, h3, h4 {
+            color: var(--color-neon-principal);
+            text-shadow: var(--sombra-neon-fina);
+            margin-top: 0;
+            transition: all 0.3s ease;
+        }
+
+        hr {
+            border-color: rgba(79, 209, 197, 0.3);
+            width: 80%; 
+            border-width: 1px;
+            margin-top: 25px;
+            margin-bottom: 25px;
+        }
+
+        /* Input general - Optimizado para móviles */
+        .input-calculadora, .input-tasa, .input-conversor {
+            background: rgba(0, 0, 0, 0.5); 
+            border: 1px solid var(--color-neon-principal);
+            padding: 10px 12px;
+            text-align: center;
+            color: var(--color-resaltado);
+            font-weight: bold;
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+            border-radius: 8px;
+            box-shadow: 0 0 2px var(--color-neon-principal),
+                        inset 0 0 2px var(--color-neon-principal);
+            transition: all 0.3s ease;
+        }
+
+        .tema-claro .input-calculadora,
+        .tema-claro .input-tasa,
+        .tema-claro .input-conversor,
+        .tema-pastel .input-calculadora,
+        .tema-pastel .input-tasa,
+        .tema-pastel .input-conversor {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--color-neon-principal);
+            color: var(--color-texto-claro);
+        }
+
+        .input-calculadora:focus, .input-tasa:focus, .input-conversor:focus {
+            outline: none;
+            box-shadow: 0 0 6px var(--color-neon-secundario),
+                        inset 0 0 6px var(--color-neon-secundario);
+        }
+        
+        .input-calculadora:disabled, .input-tasa:disabled, .input-conversor:disabled {
+            background: rgba(30, 30, 50, 0.5); 
+            color: #94a3b8; 
+            font-weight: normal;
+            border-color: rgba(138, 133, 255, 0.5);
+        }
+
+        /* Estilo para etiquetas/títulos de inputs */
+        .input-grupo label, .casilla-tasa label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 0.75em;
+            color: var(--color-texto-secundario);
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        /* Apartados generales - Optimizados para responsive */
+        .apartado {
+            background: var(--color-superficie); 
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--color-neon-secundario);
+            box-shadow: var(--sombra-neon-fina-sec);
+            margin-bottom: 15px;
+            position: relative;
+            min-width: 280px;
+            min-height: 180px;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        
+        /* Cuando hay disposición guardada, los apartados son absolutos */
+        .disposicion-guardada .apartado {
+            position: absolute;
+        }
+        
+        /* Solo en modo organización permitimos redimensionar y cambiar cursor */
+        .modo-organizacion .apartado {
+            resize: both;
+            overflow: auto;
+            cursor: move;
+        }
+        
+        /* Fuera del modo organización, desactivamos completamente el resize */
+        .apartado {
+            resize: none;
+            overflow: visible;
+        }
+        
+        /* Estilo para el control de redimensionamiento */
+        .apartado::-webkit-resizer {
+            background-color: var(--color-neon-principal);
+            border-radius: 0 0 12px 12px;
+        }
+        
+        .apartado h3 {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(138, 133, 255, 0.3);
+            color: var(--color-neon-secundario);
+            text-shadow: var(--sombra-neon-fina-sec);
+            user-select: none;
+            transition: all 0.3s ease;
+        }
+
+        /* En modo organización, el título es el área de arrastre */
+        .modo-organizacion .apartado h3 {
+            cursor: move;
+        }
+
+        /* Contenedor flexible para grupos de inputs - Optimizado para móviles */
+        .contenedor-inputs-flex {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: flex-end;
+        }
+        
+        .input-grupo {
+            flex: 1;
+            min-width: 80px;
+        }
+        
+        .input-grupo.fijo {
+            flex: 0 0 40px;
+        }
+
+        .input-grupo span {
+            display: block;
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--color-texto-secundario);
+            margin-bottom: 8px;
+        }
+
+        /* ---------------------------------------------------- */
+        /* --- 1. REQ 1: TOTAL JERÁRQUICO (SIN MARCOS) --- */
+        /* ---------------------------------------------------- */
+        
+        .seccion-total-general {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+
+        .total-casilla {
+            text-align: center;
+        }
+
+        .total-casilla h3 {
+            margin: 0 0 8px 0;
+            font-size: 1em;
+            text-shadow: none;
+        }
+        
+        /* Títulos con colores específicos */
+        #titulo-oro { color: #FFD700; }
+        #titulo-plata { color: #C0C0C0; }
+        #titulo-cobre { color: #CD7F32; }
+
+        /* Inputs de total sin borde, solo texto resaltado */
+        .input-total-general {
+            background: none;
+            border: none;
+            box-shadow: none;
+            font-size: 1.5em;
+            font-weight: bold;
+            text-align: center;
+            padding: 5px;
+            width: 100%;
+        }
+        .input-total-general:focus {
+            box-shadow: none;
+            outline: none;
+        }
+        
+        #totalOro { color: #FFD700; }
+        #totalPlata { color: #C0C0C0; }
+        #totalCobre { color: #CD7F32; }
+
+        /* ---------------------------------------------------- */
+        /* --- 1. REQ 1: CALCULADORA DE ITEMS --- */
+        /* ---------------------------------------------------- */
+        
+        .item-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            align-items: flex-end;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(79, 209, 197, 0.2);
+        }
+        
+        .item-row .input-grupo {
+            min-width: 50px;
+        }
+
+        /* Input de texto normal para el nombre */
+        .input-texto {
+            color: var(--color-texto-claro);
+            font-weight: normal;
+            text-align: left;
+        }
+        
+        .btn-accion {
+            background-color: var(--color-neon-principal);
+            color: var(--color-fondo);
+            border: none;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-family: 'Consolas', 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            width: 100%;
+            font-size: 1em;
+            box-shadow: var(--sombra-neon-fina);
+        }
+        .btn-accion:hover {
+            background-color: var(--color-resaltado);
+            box-shadow: var(--sombra-neon-fina);
+            transform: translateY(-2px);
+        }
+
+        /* ---------------------------------------------------- */
+        /* --- 2. REQ 2: CONVERSOR ORO/DÓLAR --- */
+        /* ---------------------------------------------------- */
+        
+        .bloque-conversion {
+            margin-bottom: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(138, 133, 255, 0.3);
+        }
+        
+        .bloque-conversion h4 {
+            font-size: 1em; 
+            margin-bottom: 12px;
+            color: var(--color-texto-claro);
+            text-shadow: none;
+        }
+
+        /* ---------------------------------------------------- */
+        /* --- 3. REQ 3: CONVERSOR BCV (MODIFICADO) --- */
+        /* ---------------------------------------------------- */
+        
+        .seccion-tasas {
+            display: flex;
+            flex-direction: column; 
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 10px;
+            background: rgba(43, 43, 71, 0.4);
+            border: 1px solid var(--color-neon-secundario);
+            box-shadow: var(--sombra-neon-fina-sec);
+        }
+
+        .tema-claro .seccion-tasas,
+        .tema-pastel .seccion-tasas {
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .casilla-tasa {
+            flex: 1;
+        }
+
+        .seccion-conversiones {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            position: relative;
+            min-height: 300px;
+        }
+        
+        /* Estilos para las sub-secciones movibles del BCV */
+        .subseccion-bcv {
+            background: var(--color-fondo);
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid var(--color-neon-principal);
+            margin-bottom: 12px;
+            position: relative;
+            min-width: 250px;
+            min-height: 150px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+        
+        .disposicion-guardada .subseccion-bcv {
+            position: absolute;
+        }
+        
+        .modo-organizacion .subseccion-bcv {
+            resize: both;
+            overflow: auto;
+            cursor: move;
+            z-index: 20;
+        }
+        
+        /* Fuera del modo organización, desactivamos completamente el resize */
+        .subseccion-bcv {
+            resize: none;
+            overflow: visible;
+        }
+        
+        .subseccion-bcv h4 {
+            font-size: 1em;
+            margin-bottom: 12px;
+            padding-bottom: 5px;
+            border-bottom: 1px solid rgba(79, 209, 197, 0.3);
+            color: var(--color-neon-principal);
+            cursor: move;
+            user-select: none;
+        }
+        
+        .subseccion-bcv::-webkit-resizer {
+            background-color: var(--color-neon-secundario);
+            border-radius: 0 0 8px 8px;
+        }
+        
+        /* Símbolos = y x */
+        .simbolo-igual, .simbolo-multiplicacion {
+            font-size: 1.2em;
+            color: var(--color-texto-secundario);
+            text-align: center;
+            align-self: flex-end;
+            padding-bottom: 8px;
+            flex: 0 0 25px;
+        }
+        
+        /* --- Estilos para la Barra de Progreso (Meta de Oro) --- */
+        .progreso-barra-contenedor {
+            width: 100%;
+            background-color: var(--color-fondo);
+            border: 1px solid var(--color-neon-secundario);
+            border-radius: 10px;
+            height: 18px;
+            overflow: hidden;
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.5);
+        }
+        
+        .progreso-barra-relleno {
+            height: 100%;
+            width: 0%;
+            background-color: var(--color-neon-principal);
+            border-radius: 8px;
+            transition: width 0.5s ease-out, background-color 0.5s ease;
+            box-shadow: 0 0 5px var(--color-neon-principal);
+        }
+
+        .progreso-texto-porcentaje {
+            display: block;
+            text-align: center;
+            font-size: 0.8em;
+            margin-top: 5px;
+            color: var(--color-resaltado);
+            font-weight: bold;
+        }
+
+        /* Botones de organización y temas */
+        .btn-organizar {
+            background-color: var(--color-neon-secundario);
+            color: var(--color-fondo);
+            border: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-family: 'Consolas', 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            width: 100%;
+            margin-top: 5px;
+            box-shadow: var(--sombra-neon-fina);
+        }
+        
+        .btn-organizar:hover {
+            background-color: var(--color-resaltado);
+            box-shadow: var(--sombra-neon-fina);
+            transform: translateY(-2px);
+        }
+
+        /* Botones de temas */
+        .btn-tema {
+            background: linear-gradient(135deg, var(--color-neon-principal), var(--color-neon-secundario));
+            color: white;
+            border: none;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+            width: 100%;
+            margin-top: 5px;
+            box-shadow: var(--sombra-neon-fina);
+        }
+        
+        .btn-tema:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn-tema.active {
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+            transform: translateY(0);
+        }
+        
+        /* Indicador de modo de organización */
+        .indicador-modo {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+        
+        .modo-normal .indicador-modo {
+            background-color: #4fd1c5;
+        }
+        
+        .modo-organizacion .indicador-modo {
+            background-color: #ff6b6b;
+            animation: parpadeo 1s infinite;
+        }
+        
+        @keyframes parpadeo {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Efecto visual al arrastrar */
+        .apartado.arrastrando,
+        .subseccion-bcv.arrastrando {
+            opacity: 0.8;
+            transform: scale(1.02);
+            box-shadow: 0 0 15px var(--color-neon-principal);
+            z-index: 1000;
+        }
+
+        /* ==================================================== */
+        /* MEDIA QUERIES PARA RESPONSIVE DESIGN */
+        /* ==================================================== */
+
+        /* Tablets (768px - 1024px) */
+        @media (min-width: 768px) {
+            body {
+                font-size: 15px;
+                padding: 15px;
+            }
+
+            h1 {
+                font-size: 2em;
+                text-align: left;
+            }
+
+            .apartado {
+                padding: 18px;
+                min-width: 320px;
+                min-height: 200px;
+            }
+
+            .apartado h3 {
+                font-size: 1.3em;
+            }
+
+            .input-calculadora, .input-tasa, .input-conversor {
+                padding: 10px 12px;
+                font-size: 1.05em;
+            }
+
+            .btn-accion, .btn-organizar, .btn-tema {
+                width: auto;
+                padding: 10px 15px;
+            }
+
+            .btn-organizar, .btn-tema {
+                width: auto;
+                margin-top: 0;
+                margin-left: 10px;
+            }
+
+            .seccion-tasas {
+                flex-direction: row;
+            }
+
+            .seccion-conversiones {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+            }
+
+            .item-row {
+                grid-template-columns: 2fr repeat(5, 1fr);
+                gap: 10px;
+            }
+
+            .contenedor-inputs-flex {
+                gap: 12px;
+            }
+
+            .input-grupo {
+                min-width: 90px;
+            }
+
+            .input-grupo.fijo {
+                flex: 0 0 45px;
+            }
+
+            .input-total-general {
+                font-size: 1.8em;
+            }
+        }
+
+        /* Desktop (1024px+) */
+        @media (min-width: 1024px) {
+            body {
+                font-size: 16px;
+                padding: 20px;
+            }
+
+            .apartado {
+                padding: 20px;
+                min-width: 350px;
+                min-height: 220px;
+            }
+
+            .apartado h3 {
+                font-size: 1.4em;
+            }
+
+            .input-calculadora, .input-tasa, .input-conversor {
+                padding: 12px 15px;
+                font-size: 1.1em;
+            }
+
+            .contenedor-inputs-flex {
+                gap: 15px;
+            }
+
+            .input-grupo {
+                min-width: 100px;
+            }
+
+            .input-grupo.fijo {
+                flex: 0 0 50px;
+            }
+
+            .input-total-general {
+                font-size: 2em;
+            }
+
+            .btn-accion, .btn-organizar, .btn-tema {
+                padding: 12px 18px;
+            }
+        }
+
+        /* Móviles pequeños (menos de 480px) */
+        @media (max-width: 480px) {
+            body {
+                padding: 8px;
+                font-size: 13px;
+            }
+
+            h1 {
+                font-size: 1.5em;
+            }
+
+            .seccion-total-general {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .apartado {
+                padding: 12px;
+                min-width: 260px;
+                min-height: 160px;
+                margin-bottom: 12px;
+            }
+
+            .apartado h3 {
+                font-size: 1.1em;
+                margin-bottom: 12px;
+            }
+
+            .input-calculadora, .input-tasa, .input-conversor {
+                padding: 8px 10px;
+                font-size: 0.95em;
+            }
+
+            .contenedor-inputs-flex {
+                gap: 8px;
+            }
+
+            .input-grupo {
+                min-width: 70px;
+            }
+
+            .input-grupo.fijo {
+                flex: 0 0 35px;
+            }
+
+            .input-total-general {
+                font-size: 1.3em;
+            }
+
+            .btn-accion, .btn-organizar, .btn-tema {
+                padding: 10px 12px;
+                font-size: 0.9em;
+            }
+
+            .bloque-conversion {
+                padding: 10px;
+                margin-bottom: 12px;
+            }
+
+            .seccion-tasas {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+
+            .subseccion-bcv {
+                padding: 10px;
+                min-width: 220px;
+                min-height: 130px;
+            }
+        }
+
+        /* Header responsive */
+        .header-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 15px;
+        }
+
+        .botones-superiores {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .botones-temas {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .header-container {
+                flex-direction: row;
+                align-items: center;
+            }
+            
+            .botones-superiores {
+                flex-direction: row;
+                width: auto;
+            }
+            
+            .botones-temas {
+                flex-direction: row;
+                width: auto;
+                margin-left: 10px;
+            }
+        }
+
+        @media (max-width: 767px) {
+            .header-container {
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body class="modo-normal">
+
+<div class="contenedor-principal">
+    
+    <div class="header-container">
+        <h1>Calculadora Múltiple</h1>
+        <div class="botones-superiores">
+            <button id="toggleOrganizarBtn" class="btn-organizar">
+                <span class="indicador-modo"></span>Modo Organización
+            </button>
+            <button id="resetDisposicionBtn" class="btn-organizar" style="background-color: #e53e3e;">
+                ↺ Resetear
+            </button>
+        </div>
+        <div class="botones-temas">
+            <button id="toggleNeonBtn" class="btn-tema">
+                🌙 Modo Neón
+            </button>
+            <button id="cambiarTemaBtn" class="btn-tema">
+                🎨 Cambiar Tema
+            </button>
+        </div>
+    </div>
+    
+    <section class="seccion-total-general">
+        <div class="total-casilla">
+            <h3 id="titulo-oro">ORO</h3>
+            <input type="text" id="totalOro" class="input-total-general" value="0" disabled>
+        </div>
+        <div class="total-casilla">
+            <h3 id="titulo-plata">PLATA</h3>
+            <input type="text" id="totalPlata" class="input-total-general" value="0" disabled>
+        </div>
+        <div class="total-casilla">
+            <h3 id="titulo-cobre">COBRE</h3>
+            <input type="text" id="totalCobre" class="input-total-general" value="0" disabled>
+        </div>
+    </section>
+	
+    <div class="apartado" id="apartado-meta">
+        <h3>Meta de Oro</h3>
+        <div class="contenedor-inputs-flex">
+            <div class="input-grupo">
+                <label for="metaOro">Meta de Oro</label>
+                <input type="text" id="metaOro" class="input-calculadora" value="1000">
+            </div>
+            <div class="input-grupo">
+                <label for="totalOroActual">Total Actual</label>
+                <input type="text" id="totalOroActual" class="input-calculadora" value="0">
+            </div>
+            <div class="input-grupo">
+                <label for="faltanteOro">Faltante</label>
+                <input type="text" id="faltanteOro" class="input-calculadora" value="1000" disabled style="color: #e53e3e; font-weight: bold;">
+            </div>
+        </div>
+        
+        <label style="display: block; margin-top: 15px; margin-bottom: 5px; font-size: 0.75em; color: var(--color-texto-secundario); text-transform: uppercase;">Progreso</label>
+        <div class="progreso-barra-contenedor">
+            <div id="progresoRelleno" class="progreso-barra-relleno"></div>
+        </div>
+        <span id="progresoTexto" class="progreso-texto-porcentaje">0%</span>
+    </div>
+
+    <div class="apartado" id="apartado-calculadora">
+        <h3>Calculadora de Items</h3>
+        <div id="item-rows-container">
+            <div class="item-row" style="border-bottom: 2px solid var(--color-neon-principal); padding-bottom: 5px; margin-bottom: 12px;">
+                <div class="input-grupo"><label>Nombre</label></div>
+                <div class="input-grupo"><label>Oro</label></div>
+                <div class="input-grupo"><label>Plata</label></div>
+                <div class="input-grupo"><label>Cobre</label></div>
+                <div class="input-grupo"><label>Cant.</label></div>
+                <div class="input-grupo"><label>Total Oro</label></div>
+            </div>
+            
+            <div class="item-row">
+                <div class="input-grupo">
+                    <input type="text" class="input-calculadora input-texto item-input" placeholder="Ej: Poción">
+                </div>
+                <div class="input-grupo">
+                    <input type="text" class="input-calculadora item-input item-oro" value="0">
+                </div>
+                <div class="input-grupo">
+                    <input type="text" class="input-calculadora item-input item-plata" value="0">
+                </div>
+                <div class="input-grupo">
+                    <input type="text" class="input-calculadora item-input item-cobre" value="0">
+                </div>
+                <div class="input-grupo">
+                    <input type="text" class="input-calculadora item-input item-cantidad" value="1">
+                </div>
+                <div class="input-grupo">
+                    <input type="text" class="input-calculadora item-total-oro" value="0.00" disabled>
+                </div>
+            </div>
+        </div>
+        <button id="addRowBtn" class="btn-accion">Añadir Item</button>
+    </div>
+
+    <div class="apartado" id="apartado-conversor-oro">
+        <h3>Conversor Oro <-> Dólar</h3>
+        
+        <div class="bloque-conversion">
+            <h4>Calcular Oro (por Dólares)</h4>
+            <div class="contenedor-inputs-flex">
+                <div class="input-grupo">
+                    <label for="precioMercado">Precio (USD/Oro)</label>
+                    <input type="text" id="precioMercado" class="input-calculadora" value="1.00">
+                </div>
+                <div class="input-grupo">
+                    <label for="dolarEstimado">Dólares (USD)</label>
+                    <input type="text" id="dolarEstimado" class="input-calculadora" value="0.00">
+                </div>
+                <div class="input-grupo fijo">
+                    <span>=</span>
+                </div>
+                <div class="input-grupo">
+                    <label for="cantidadTotalOro">Total Oro</label>
+                    <input type="text" id="cantidadTotalOro" class="input-calculadora" value="0.00" disabled>
+                </div>
+            </div>
+        </div>
+
+        <div class="bloque-conversion">
+            <h4>Calcular Precio (por Oro)</h4>
+            <div class="contenedor-inputs-flex">
+                <div class="input-grupo">
+                    <label for="oroInput">Cantidad Oro</label>
+                    <input type="text" id="oroInput" class="input-calculadora" value="0.00">
+                </div>
+                <div class="input-grupo">
+                    <label for="precioMercadoDisplay">Precio (USD/Oro)</label>
+                    <input type="text" id="precioMercadoDisplay" class="input-calculadora" value="1.00" disabled>
+                </div>
+                <div class="input-grupo fijo">
+                    <span>=</span>
+                </div>
+                <div class="input-grupo">
+                    <label for="precioTotalUSD">Total USD</label>
+                    <input type="text" id="precioTotalUSD" class="input-calculadora" value="0.00" disabled>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="apartado" id="apartado-conversor-bcv">
+        <h3>Conversor de Divisas (BCV)</h3>
+        
+        <section class="seccion-tasas">
+            <div class="casilla-tasa">
+                <label for="tasaDolar">Dolar BCV</label>
+                <input type="text" id="tasaDolar" class="input-tasa" value="36.00" data-tasa-id="1"> 
+            </div>
+            <div class="casilla-tasa">
+                <label for="tasaPersonalizada">Personalizado</label>
+                <input type="text" id="tasaPersonalizada" class="input-tasa" value="1.00" data-tasa-id="3">
+            </div>
+        </section>
+
+        <section class="seccion-conversiones" id="seccion-conversiones-bcv">
+            
+            <div class="subseccion-bcv" id="subseccion-dolar">
+                <h4>Dolar BCV</h4>
+                
+                <div class="bloque-conversion">
+                    <h5>USD → VEF</h5>
+                    <div class="contenedor-inputs-flex">
+                        <div class="input-grupo">
+                            <label for="valDolarBCV">USD</label>
+                            <input type="text" id="valDolarBCV" class="input-conversor" value="0.00" data-conversion-id="1" data-tipo="directa">
+                        </div>
+                        <span class="simbolo-multiplicacion">x</span>
+                        <div class="input-grupo">
+                            <label>Tasa</label>
+                            <input type="text" id="tasaDisplayDolar" class="input-conversor" value="36.00" disabled>
+                        </div>
+                        <span class="simbolo-igual">=</span>
+                        <div class="input-grupo">
+                            <label for="resDolarBolivares">Bs</label>
+                            <input type="text" id="resDolarBolivares" class="input-conversor" value="0.00" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bloque-conversion">
+                    <h5>VEF → USD</h5>
+                    <div class="contenedor-inputs-flex">
+                         <div class="input-grupo">
+                            <label for="valBolivaresInversoDolar">Bs</label>
+                            <input type="text" id="valBolivaresInversoDolar" class="input-conversor" value="0.00" data-conversion-id="1" data-tipo="inversa">
+                        </div>
+                        <span class="simbolo-multiplicacion">/</span>
+                        <div class="input-grupo">
+                            <label>Tasa</label>
+                            <input type="text" id="tasaDisplayDolarInv" class="input-conversor" value="36.00" disabled>
+                        </div>
+                        <span class="simbolo-igual">=</span>
+                        <div class="input-grupo">
+                            <label for="resDolarInverso">USD</label>
+                            <input type="text" id="resDolarInverso" class="input-conversor" value="0.00" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="subseccion-bcv" id="subseccion-personalizado">
+                <h4>Personalizado</h4>
+                <div class="bloque-conversion">
+                    <h5>DIVISA → VEF</h5>
+                    <div class="contenedor-inputs-flex">
+                        <div class="input-grupo">
+                            <label for="valPers">USD</label>
+                            <input type="text" id="valPers" class="input-conversor" value="0.00" data-conversion-id="3" data-tipo="directa">
+                        </div>
+                        <span class="simbolo-multiplicacion">x</span>
+                        <div class="input-grupo">
+                            <label>Tasa</label>
+                            <input type="text" id="tasaDisplayPers" class="input-conversor" value="1.00" disabled>
+                        </div>
+                         <span class="simbolo-igual">=</span>
+                        <div class="input-grupo">
+                            <label for="resPersBolivares">Bs</label>
+                            <input type="text" id="resPersBolivares" class="input-conversor" value="0.00" disabled>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bloque-conversion">
+                    <h5>VEF → DIVISA</h5>
+                    <div class="contenedor-inputs-flex">
+                        <div class="input-grupo">
+                            <label for="valBolivaresInversoPers">Bs</label>
+                            <input type="text" id="valBolivaresInversoPers" class="input-conversor" value="0.00" data-conversion-id="3" data-tipo="inversa">
+                        </div>
+                        <span class="simbolo-multiplicacion">/</span>
+                        <div class="input-grupo">
+                            <label>Tasa</label>
+                            <input type="text" id="tasaDisplayPersInv" class="input-conversor" value="1.00" disabled>
+                        </div>
+                        <span class="simbolo-igual">=</span>
+                        <div class="input-grupo">
+                            <label for="resPersInverso">USD</label>
+                            <input type="text" id="resPersInverso" class="input-conversor" value="0.00" disabled>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+    </div>
+
+</div>
+
+<script>
+    // ===================================================================
+    // --- NUEVA FUNCIONALIDAD: CONTROL DE TEMAS Y NEÓN ---
+    // ===================================================================
+    
+    let temaActual = 'neon'; // 'neon', 'claro', 'pastel', 'oscuro-suave'
+    let modoNeonActivo = true;
+
+    // Elementos de los botones de temas
+    const toggleNeonBtn = document.getElementById('toggleNeonBtn');
+    const cambiarTemaBtn = document.getElementById('cambiarTemaBtn');
+
+    // Función para cambiar entre modo neón y sin neón
+    function toggleModoNeon() {
+        modoNeonActivo = !modoNeonActivo;
+        
+        if (modoNeonActivo) {
+            document.body.classList.remove('sin-neon');
+            toggleNeonBtn.textContent = '🌙 Modo Neón';
+            toggleNeonBtn.style.background = 'linear-gradient(135deg, var(--color-neon-principal), var(--color-neon-secundario))';
+        } else {
+            document.body.classList.add('sin-neon');
+            toggleNeonBtn.textContent = '☀️ Sin Neón';
+            toggleNeonBtn.style.background = 'linear-gradient(135deg, #666, #888)';
+        }
+        
+        // Guardar preferencia
+        localStorage.setItem('modoNeon', modoNeonActivo);
+    }
+
+    // Función para cambiar entre temas de colores
+    function cambiarTema() {
+        // Remover todos los temas primero
+        document.body.classList.remove('tema-claro', 'tema-pastel', 'tema-oscuro-suave');
+        
+        // Ciclar entre temas
+        switch(temaActual) {
+            case 'neon':
+                temaActual = 'claro';
+                document.body.classList.add('tema-claro');
+                cambiarTemaBtn.textContent = '🌞 Tema Claro';
+                break;
+            case 'claro':
+                temaActual = 'pastel';
+                document.body.classList.add('tema-pastel');
+                cambiarTemaBtn.textContent = '🎨 Tema Pastel';
+                break;
+            case 'pastel':
+                temaActual = 'oscuro-suave';
+                document.body.classList.add('tema-oscuro-suave');
+                cambiarTemaBtn.textContent = '🌙 Tema Oscuro';
+                break;
+            case 'oscuro-suave':
+                temaActual = 'neon';
+                // No agregar clase, es el tema por defecto
+                cambiarTemaBtn.textContent = '⚡ Tema Neón';
+                break;
+        }
+        
+        // Guardar preferencia
+        localStorage.setItem('temaActual', temaActual);
+    }
+
+    // Función para cargar preferencias guardadas
+    function cargarPreferencias() {
+        // Cargar modo neón
+        const modoNeonGuardado = localStorage.getItem('modoNeon');
+        if (modoNeonGuardado !== null) {
+            modoNeonActivo = modoNeonGuardado === 'true';
+            if (!modoNeonActivo) {
+                document.body.classList.add('sin-neon');
+                toggleNeonBtn.textContent = '☀️ Sin Neón';
+                toggleNeonBtn.style.background = 'linear-gradient(135deg, #666, #888)';
+            }
+        }
+        
+        // Cargar tema
+        const temaGuardado = localStorage.getItem('temaActual');
+        if (temaGuardado) {
+            temaActual = temaGuardado;
+            document.body.classList.remove('tema-claro', 'tema-pastel', 'tema-oscuro-suave');
+            
+            switch(temaActual) {
+                case 'claro':
+                    document.body.classList.add('tema-claro');
+                    cambiarTemaBtn.textContent = '🌞 Tema Claro';
+                    break;
+                case 'pastel':
+                    document.body.classList.add('tema-pastel');
+                    cambiarTemaBtn.textContent = '🎨 Tema Pastel';
+                    break;
+                case 'oscuro-suave':
+                    document.body.classList.add('tema-oscuro-suave');
+                    cambiarTemaBtn.textContent = '🌙 Tema Oscuro';
+                    break;
+                default:
+                    cambiarTemaBtn.textContent = '⚡ Tema Neón';
+                    break;
+            }
+        }
+    }
+
+    // Listeners para los botones de temas
+    toggleNeonBtn.addEventListener('click', toggleModoNeon);
+    cambiarTemaBtn.addEventListener('click', cambiarTema);
+
+    // --- EL RESTO DEL JAVASCRIPT PERMANECE IGUAL ---
+    // (Todas las funciones anteriores se mantienen igual)
+    
+    // --- FUNCIONES DE FORMATO Y UTILIDAD ---
+    function formatValue(value, maxDecimals = 3) {
+        let cleaned = value.toString().replace(/,/g, '.').replace(/[^\d.]/g, '');
+        const parts = cleaned.split('.');
+        if (parts.length > 3) {
+            cleaned = parts[0] + '.' + parts.slice(1).join('');
+        }
+        
+        if (cleaned.includes('.')) {
+            const [integer, decimal] = cleaned.split('.');
+            if (decimal && decimal.length > maxDecimals) {
+                cleaned = integer + '.' + decimal.substring(0, maxDecimals);
+            }
+        }
+        return cleaned;
+    }
+    
+    function formatValueInt(value) {
+        return value.toString().replace(/[^\d]/g, '');
+    }
+
+    function parseFloatSafe(value) {
+        const parsed = parseFloat(value);
+        return isNaN(parsed) ? 0 : parsed;
+    }
+
+    // ... (Todas las demás funciones se mantienen igual)
+
+    // --- INICIALIZACIÓN ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // ============================================
+        // ALERTA DE BIENVENIDA
+        // ============================================
+        setTimeout(() => {
+            alert("¡Bienvenido al Grand Exchanges Wow!\n\n" +
+                  "• Calcula valores en Oro, Plata y Cobre\n" +
+                  "• Conversor de divisas BCV\n" + 
+                  "• Modo organización para personalizar la interfaz\n" +
+                  "• Cambia temas y modos visuales\n\n" +
+                  "¡Disfruta usando la aplicación!"
+		  "Si quieres Donarme comunicate: golpe38@gmail.com");
+        }, 500);
+        
+        // Cargar preferencias de temas
+        cargarPreferencias();
+        
+        // El resto de la inicialización permanece igual
+        cargarDisposicion();
+        loadValues();
+        document.getElementById('tasaDolar').dispatchEvent(new Event('input'));
+        document.getElementById('tasaPersonalizada').dispatchEvent(new Event('input'));
+        
+        document.getElementById('metaOro').addEventListener('input', (e) => {
+            e.target.value = formatValueInt(e.target.value);
+            actualizarMetaOro();
+        });
+
+        document.getElementById('totalOroActual').addEventListener('input', (e) => {
+            e.target.value = formatValueInt(e.target.value);
+            actualizarMetaOro();
+        });
+
+        calculateRowTotal(document.querySelector('.item-row:not([style])'));
+        precioMercadoEl.dispatchEvent(new Event('input'));
+        dolarEstimadoEl.dispatchEvent(new Event('input'));
+        oroInputEl.dispatchEvent(new Event('input'));
+        actualizarMetaOro();
+    });
+
+</script>
+</body>
+</html>
